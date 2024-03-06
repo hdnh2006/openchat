@@ -8,6 +8,17 @@ from ochat.config.conversation_template import Message, Conversation, Conversati
 import ochat.models
 
 
+# Set the global default compute type to float16
+bnb_config = transformers.BitsAndBytesConfig(
+load_in_4bit=True,
+bnb_4bit_use_double_quant=True,
+bnb_4bit_quant_type="nf4",
+bnb_4bit_compute_dtype=torch.bfloat16
+)
+
+
+
+
 _V3_2_PREFIXES = {
     # OpenAI mapping
 
@@ -45,7 +56,8 @@ MODEL_CONFIG_MAP = {
         model_tokenizer_create=partial(transformers.AutoTokenizer.from_pretrained, use_fast=False),
         model_create_for_training=partial(ochat.models.MistralForCausalLM.from_pretrained,
                                           low_cpu_mem_usage=True,
-                                          torch_dtype=torch.bfloat16),
+                                          device_map=0,  quantization_config=bnb_config),
+                                          #torch_dtype=torch.bfloat16),
 
         # Conversation Template
         conversation_template=partial(ConversationTemplate,
